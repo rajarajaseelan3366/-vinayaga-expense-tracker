@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vinayaga Construction — Expense Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div id="loadingOverlay" class="modal-overlay">
+    <div class="loading-box">
+      <div class="loading-spinner"></div>
+      <p>Loading...</p>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <button id="backBtn" class="back-btn hidden" aria-label="Back to dashboard">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        </button>
+        <div class="brand">
+          <div class="brand-logo">V</div>
+          <div class="brand-text">
+            <h1 id="pageTitle">Vinayaga Construction</h1>
+            <p id="pageSubtitle">Expense Tracker</p>
+          </div>
+        </div>
+        <button id="addProjectBtn" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add Project
+        </button>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- Dashboard View -->
+      <section id="dashboardView" class="view">
+        <!-- Stat cards -->
+        <div class="stats-grid stats-3">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+            </div>
+            <div class="stat-info">
+              <p class="stat-label">Active Projects</p>
+              <p class="stat-value" id="statProjects">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-amber">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+            <div class="stat-info">
+              <p class="stat-label">Total Contract Amount</p>
+              <p class="stat-value" id="statTotalAmount">₹0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-emerald">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+            </div>
+            <div class="stat-info">
+              <p class="stat-label">Total Amount In Hand</p>
+              <p class="stat-value" id="statInHand">₹0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="card chart-card">
+          <div class="card-header">
+            <h2>Expenses by Category</h2>
+            <span class="card-sub">Across all projects</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+
+        <!-- History section -->
+        <div class="section-head">
+          <h2>History</h2>
+          <p class="muted" id="historyCount">0 transactions</p>
+        </div>
+        <div class="card">
+          <div id="historyList" class="history-list"></div>
+          <div id="emptyHistory" class="empty-state small hidden">
+            <p>No transactions yet</p>
+            <span>Add payments or expenses to see them here.</span>
+          </div>
+        </div>
+
+        <!-- Projects section -->
+        <div class="section-head">
+          <h2>Projects</h2>
+          <p class="muted" id="projectCount">0 projects</p>
+        </div>
+        <div id="projectsGrid" class="projects-grid"></div>
+        <div id="emptyProjects" class="empty-state hidden">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+          <p>No projects yet</p>
+          <span>Click "Add Project" to get started.</span>
+        </div>
+      </section>
+
+      <!-- Project Detail View -->
+      <section id="projectView" class="view hidden">
+        <div class="project-header">
+          <div>
+            <h2 id="detailProjectName"></h2>
+            <p class="muted" id="detailClientName"></p>
+          </div>
+          <div class="project-actions">
+            <button id="editProjectBtn" class="btn btn-ghost">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+              Edit
+            </button>
+            <button id="deleteProjectBtn" class="btn btn-danger-ghost">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <!-- Project stat cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="stat-info">
+              <p class="stat-label">Contract Amount</p>
+              <p class="stat-value" id="detailContract">₹0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-emerald">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div class="stat-info">
+              <p class="stat-label">Paid by Client</p>
+              <p class="stat-value" id="detailPaid">₹0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-rose">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M12 2v20"/><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+            <div class="stat-info">
+              <p class="stat-label">Total Spent</p>
+              <p class="stat-value" id="detailSpent">₹0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-amber">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            </div>
+            <div class="stat-info">
+              <p class="stat-label">Remaining Balance</p>
+              <p class="stat-value" id="detailBalance">₹0</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-columns">
+          <!-- Payments -->
+          <div class="card list-card">
+            <div class="card-header">
+              <h2>Client Payments</h2>
+              <button id="addPaymentBtn" class="btn btn-sm btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                Add Payment
+              </button>
+            </div>
+            <div id="paymentsList" class="list"></div>
+            <div id="emptyPayments" class="empty-state small hidden">
+              <p>No payments recorded</p>
+            </div>
+          </div>
+
+          <!-- Expenses -->
+          <div class="card list-card">
+            <div class="card-header">
+              <h2>Expenses</h2>
+              <button id="addExpenseBtn" class="btn btn-sm btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                Add Expense
+              </button>
+            </div>
+            <div id="expensesList" class="list"></div>
+            <div id="emptyExpenses" class="empty-state small hidden">
+              <p>No expenses recorded</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal overlay -->
+  <div id="modalOverlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Project</h3>
+        <button id="modalClose" class="icon-btn" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <form id="modalForm" class="modal-body"></form>
+      <div class="modal-footer">
+        <button id="modalCancel" class="btn btn-ghost">Cancel</button>
+        <button id="modalSave" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm dialog -->
+  <div id="confirmOverlay" class="modal-overlay hidden">
+    <div class="modal modal-sm">
+      <div class="modal-body">
+        <h3 id="confirmTitle">Delete this item?</h3>
+        <p id="confirmMessage" class="muted">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="confirmCancel" class="btn btn-ghost">Cancel</button>
+        <button id="confirmOk" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction detail modal -->
+  <div id="txnOverlay" class="modal-overlay hidden">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3>Transaction Details</h3>
+        <button id="txnClose" class="icon-btn" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div id="txnBody" class="modal-body"></div>
+      <div class="modal-footer">
+        <button id="txnOk" class="btn btn-ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="backend.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
