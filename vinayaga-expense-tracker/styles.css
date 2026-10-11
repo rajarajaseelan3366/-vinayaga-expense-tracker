@@ -984,7 +984,25 @@ h1, h2, h3 {
   flex-shrink: 0;
   transition: color 0.15s, transform 0.15s;
 }
+.history-item {
+  display: flex;
+  flex-direction: column;
+}
 .history-row:hover .history-expand {
   color: var(--accent);
-  transform: translateX(2px);
+}
+.history-item.open .history-expand {
+  color: var(--accent);
+  transform: rotate(180deg);
+}
+.history-item.open .history-row {
+  border-radius: 12px 12px 0 0;
+}
+.history-detail {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  margin-top: -12px;
+  padding: 1.5rem 1rem 1rem;
 }

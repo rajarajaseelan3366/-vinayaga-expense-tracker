@@ -400,40 +400,50 @@ function renderHistory() {
   const downArrow =
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
 
+  const chevronDown =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+
   list.innerHTML = txns
     .map((t) => {
       const isIncome = t.type === "income";
       const color = isIncome ? "var(--emerald)" : "var(--rose)";
       const sign = isIncome ? "+" : "-";
       return `
-        <div class="history-row" data-id="${t.type}-${t.id}">
-          <div class="history-left">
-            <div class="history-icon ${t.type}">${
-              isIncome ? upArrow : downArrow
-            }</div>
-            <div class="history-info">
-              <div class="history-project">${esc(t.projectName)}</div>
-              <div class="history-datetime">${esc(formatDateTime(t.date))}</div>
+        <div class="history-item">
+          <div class="history-row" data-id="${t.type}-${t.id}">
+            <div class="history-left">
+              <div class="history-icon ${t.type}">${
+                isIncome ? upArrow : downArrow
+              }</div>
+              <div class="history-info">
+                <div class="history-project">${esc(t.projectName)}</div>
+                <div class="history-datetime">${esc(formatDateTime(t.date))}</div>
+              </div>
+            </div>
+            <div class="history-amount" style="color:${color}">${sign}${formatCurrency(
+              t.amount
+            )}</div>
+            <div class="history-expand" title="View full details">
+              ${chevronDown}
             </div>
           </div>
-          <div class="history-amount" style="color:${color}">${sign}${formatCurrency(
-            t.amount
-          )}</div>
-          <div class="history-expand" title="View full details">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </div>
+          <div class="history-detail hidden">${txnDetailRows(t)}</div>
         </div>
       `;
     })
     .join("");
 
-  list.querySelectorAll(".history-row").forEach((row, i) => {
-    row.addEventListener("click", () => showTransactionDetail(txns[i]));
+  list.querySelectorAll(".history-row").forEach((row) => {
+    row.addEventListener("click", () => {
+      const item = row.closest(".history-item");
+      item.querySelector(".history-detail").classList.toggle("hidden");
+      item.classList.toggle("open");
+    });
   });
 }
 
-function showTransactionDetail(t) {
-  const body = document.getElementById("txnBody");
+// Builds the full detail rows for a transaction (shown inline below its row).
+function txnDetailRows(t) {
   const isIncome = t.type === "income";
   const typeLabel = isIncome ? "Income" : "Expense";
   const typeColor = isIncome ? "var(--emerald)" : "var(--rose)";
@@ -475,19 +485,8 @@ function showTransactionDetail(t) {
     `;
   }
 
-  body.innerHTML = rows;
-  document.getElementById("txnOverlay").classList.remove("hidden");
+  return rows;
 }
-
-function hideTxnDetail() {
-  document.getElementById("txnOverlay").classList.add("hidden");
-}
-
-document.getElementById("txnClose").addEventListener("click", hideTxnDetail);
-document.getElementById("txnOk").addEventListener("click", hideTxnDetail);
-document.getElementById("txnOverlay").addEventListener("click", (e) => {
-  if (e.target.id === "txnOverlay") hideTxnDetail();
-});
 
 /* ---------- Render: Project Detail ---------- */
 function openProject(id) {
@@ -728,8 +727,6 @@ document.addEventListener("keydown", (e) => {
       !document.getElementById("confirmOverlay").classList.contains("hidden")
     )
       hideConfirm();
-    if (!document.getElementById("txnOverlay").classList.contains("hidden"))
-      hideTxnDetail();
   }
 });
 
