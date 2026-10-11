@@ -1027,8 +1027,16 @@ function goToDashboard() {
 
 document.getElementById("backBtn").addEventListener("click", goToDashboard);
 
-/* ---------- Init ---------- */
-(async function init() {
+/* ---------- Auth gate & init ---------- */
+function showLogin() {
+  hideLoading();
+  document.getElementById("loginOverlay").classList.remove("hidden");
+  document.querySelector(".app").classList.add("hidden");
+}
+
+async function startApp() {
+  document.getElementById("loginOverlay").classList.add("hidden");
+  document.querySelector(".app").classList.remove("hidden");
   showLoading();
   try {
     projects = await VCDB.loadAll();
@@ -1038,4 +1046,55 @@ document.getElementById("backBtn").addEventListener("click", goToDashboard);
   }
   hideLoading();
   renderDashboard();
+}
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("loginBtn");
+  const errEl = document.getElementById("loginError");
+  errEl.classList.add("hidden");
+  btn.disabled = true;
+  btn.textContent = "Logging in...";
+  try {
+    const username = document.getElementById("loginEmail").value.trim();
+    // Plain usernames map to @vinayaga.app accounts in Supabase Auth.
+    const email = username.includes("@")
+      ? username
+      : username + "@vinayaga.app";
+    await VCDB.signIn(email, document.getElementById("loginPassword").value);
+    document.getElementById("loginForm").reset();
+    startApp();
+  } catch (err) {
+    console.error(err);
+    errEl.textContent =
+      err.message || "Login failed. Check your username and password.";
+    errEl.classList.remove("hidden");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Login";
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  try {
+    await VCDB.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+  location.reload();
+});
+
+(async function init() {
+  showLoading();
+  let session = null;
+  try {
+    session = await VCDB.getSession();
+  } catch (e) {
+    console.error(e);
+  }
+  if (!session) {
+    showLogin();
+    return;
+  }
+  startApp();
 })();

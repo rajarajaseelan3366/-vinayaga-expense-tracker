@@ -159,7 +159,35 @@ window.VCDB = (() => {
     check(error);
   }
 
+  /* ---------- Auth (UI gate only) ----------
+     NOTE: The database RLS policies intentionally stay open to the anon
+     role for now (WhatsApp-side logging writes via the anon key). This
+     login is only a screen gate for the web app; locking the database
+     itself is a later phase. */
+  async function getSession() {
+    const { data, error } = await client().auth.getSession();
+    check(error);
+    return data.session;
+  }
+
+  async function signIn(email, password) {
+    const { data, error } = await client().auth.signInWithPassword({
+      email,
+      password,
+    });
+    check(error);
+    return data.session;
+  }
+
+  async function signOut() {
+    const { error } = await client().auth.signOut();
+    check(error);
+  }
+
   return {
+    getSession,
+    signIn,
+    signOut,
     loadAll,
     insertProject,
     updateProject,
