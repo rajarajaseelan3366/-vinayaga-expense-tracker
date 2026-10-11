@@ -1057,10 +1057,11 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   btn.textContent = "Logging in...";
   try {
     const username = document.getElementById("loginEmail").value.trim();
-    // Plain usernames map to @vinayaga.app accounts in Supabase Auth.
+    // Plain usernames map to <name>.vinayaga@gmail.com in Supabase Auth
+    // (gmail.com is used because Supabase rejects email domains without MX records).
     const email = username.includes("@")
       ? username
-      : username + "@vinayaga.app";
+      : username + ".vinayaga@gmail.com";
     await VCDB.signIn(email, document.getElementById("loginPassword").value);
     document.getElementById("loginForm").reset();
     startApp();
