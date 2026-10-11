@@ -37,7 +37,6 @@ const CATEGORY_LABELS = {
 /* ---------- State ---------- */
 let projects = [];
 let currentProjectId = null;
-let historyFilter = "all"; // all | today | lastmonth | custom
 let categoryChart = null;
 let activeModal = null; // { mode, type, id }
 
@@ -312,64 +311,14 @@ function getAllTransactions() {
   }
   // newest first
   txns.sort((a, b) => new Date(b.date) - new Date(a.date));
-  return txns.filter((t) => txnInFilter(t.date));
+  return txns;
 }
 
-// Returns true when a transaction date falls inside the active History filter.
-function txnInFilter(dateStr) {
-  if (historyFilter === "all") return true;
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return true;
-  const now = new Date();
-  if (historyFilter === "today") {
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
-    return d >= start && d < end;
-  }
-  if (historyFilter === "lastmonth") {
-    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const end = new Date(now.getFullYear(), now.getMonth(), 1);
-    return d >= start && d < end;
-  }
-  if (historyFilter === "custom") {
-    const from = document.getElementById("filterFrom").value;
-    const to = document.getElementById("filterTo").value;
-    if (from && d < new Date(from + "T00:00:00")) return false;
-    if (to) {
-      const end = new Date(to + "T00:00:00");
-      end.setDate(end.getDate() + 1);
-      if (d >= end) return false;
-    }
-  }
-  return true;
-}
-
-/* ---------- History filter controls ---------- */
-document.querySelectorAll(".history-filters .chip").forEach((chip) => {
-  chip.addEventListener("click", () => {
-    historyFilter = chip.getAttribute("data-filter");
-    document
-      .querySelectorAll(".history-filters .chip")
-      .forEach((c) => c.classList.toggle("active", c === chip));
-    document.getElementById("filterFrom").value = "";
-    document.getElementById("filterTo").value = "";
-    renderHistory();
-  });
+/* ---------- History list toggle ---------- */
+document.getElementById("historyToggle").addEventListener("click", () => {
+  document.getElementById("historyCard").classList.toggle("hidden");
+  document.getElementById("historyToggle").classList.toggle("collapsed");
 });
-
-function onCustomDateChange() {
-  const from = document.getElementById("filterFrom").value;
-  const to = document.getElementById("filterTo").value;
-  if (!from && !to) return;
-  historyFilter = "custom";
-  document
-    .querySelectorAll(".history-filters .chip")
-    .forEach((c) => c.classList.remove("active"));
-  renderHistory();
-}
-document.getElementById("filterFrom").addEventListener("change", onCustomDateChange);
-document.getElementById("filterTo").addEventListener("change", onCustomDateChange);
 
 function renderHistory() {
   const list = document.getElementById("historyList");
@@ -382,14 +331,6 @@ function renderHistory() {
 
   if (txns.length === 0) {
     list.innerHTML = "";
-    empty.querySelector("p").textContent =
-      historyFilter === "all"
-        ? "No transactions yet"
-        : "No transactions in this period";
-    empty.querySelector("span").textContent =
-      historyFilter === "all"
-        ? "Add payments or expenses to see them here."
-        : "Try a different filter or date range.";
     empty.classList.remove("hidden");
     return;
   }
@@ -400,50 +341,37 @@ function renderHistory() {
   const downArrow =
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
 
-  const chevronDown =
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
-
   list.innerHTML = txns
     .map((t) => {
       const isIncome = t.type === "income";
       const color = isIncome ? "var(--emerald)" : "var(--rose)";
       const sign = isIncome ? "+" : "-";
       return `
-        <div class="history-item">
-          <div class="history-row" data-id="${t.type}-${t.id}">
-            <div class="history-left">
-              <div class="history-icon ${t.type}">${
-                isIncome ? upArrow : downArrow
-              }</div>
-              <div class="history-info">
-                <div class="history-project">${esc(t.projectName)}</div>
-                <div class="history-datetime">${esc(formatDateTime(t.date))}</div>
-              </div>
-            </div>
-            <div class="history-amount" style="color:${color}">${sign}${formatCurrency(
-              t.amount
-            )}</div>
-            <div class="history-expand" title="View full details">
-              ${chevronDown}
+        <div class="history-row" data-id="${t.type}-${t.id}">
+          <div class="history-left">
+            <div class="history-icon ${t.type}">${
+              isIncome ? upArrow : downArrow
+            }</div>
+            <div class="history-info">
+              <div class="history-project">${esc(t.projectName)}</div>
+              <div class="history-datetime">${esc(formatDateTime(t.date))}</div>
             </div>
           </div>
-          <div class="history-detail hidden">${txnDetailRows(t)}</div>
+          <div class="history-amount" style="color:${color}">${sign}${formatCurrency(
+            t.amount
+          )}</div>
         </div>
       `;
     })
     .join("");
 
-  list.querySelectorAll(".history-row").forEach((row) => {
-    row.addEventListener("click", () => {
-      const item = row.closest(".history-item");
-      item.querySelector(".history-detail").classList.toggle("hidden");
-      item.classList.toggle("open");
-    });
+  list.querySelectorAll(".history-row").forEach((row, i) => {
+    row.addEventListener("click", () => showTransactionDetail(txns[i]));
   });
 }
 
-// Builds the full detail rows for a transaction (shown inline below its row).
-function txnDetailRows(t) {
+function showTransactionDetail(t) {
+  const body = document.getElementById("txnBody");
   const isIncome = t.type === "income";
   const typeLabel = isIncome ? "Income" : "Expense";
   const typeColor = isIncome ? "var(--emerald)" : "var(--rose)";
@@ -485,8 +413,19 @@ function txnDetailRows(t) {
     `;
   }
 
-  return rows;
+  body.innerHTML = rows;
+  document.getElementById("txnOverlay").classList.remove("hidden");
 }
+
+function hideTxnDetail() {
+  document.getElementById("txnOverlay").classList.add("hidden");
+}
+
+document.getElementById("txnClose").addEventListener("click", hideTxnDetail);
+document.getElementById("txnOk").addEventListener("click", hideTxnDetail);
+document.getElementById("txnOverlay").addEventListener("click", (e) => {
+  if (e.target.id === "txnOverlay") hideTxnDetail();
+});
 
 /* ---------- Render: Project Detail ---------- */
 function openProject(id) {
@@ -727,6 +666,8 @@ document.addEventListener("keydown", (e) => {
       !document.getElementById("confirmOverlay").classList.contains("hidden")
     )
       hideConfirm();
+    if (!document.getElementById("txnOverlay").classList.contains("hidden"))
+      hideTxnDetail();
   }
 });
 

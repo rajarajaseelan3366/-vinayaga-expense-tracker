@@ -921,88 +921,27 @@ h1, h2, h3 {
   to { transform: rotate(360deg); }
 }
 
-/* History filters */
-.history-filters {
-  display: flex;
+/* History list toggle */
+.history-toggle {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin: 0.6rem 0 0.7rem;
-}
-.filter-chips {
-  display: flex;
-  gap: 0.4rem;
-}
-.chip {
-  padding: 0.35rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  background: var(--surface);
+  gap: 0.35rem;
+  background: none;
+  border: none;
   color: var(--text-muted);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.chip:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-}
-.chip.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: var(--accent);
-}
-.date-range {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-.date-range input[type="date"] {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 8px;
-  padding: 0.32rem 0.5rem;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-family: var(--font);
-  color-scheme: dark;
+  cursor: pointer;
+  padding: 0.2rem 0;
+  transition: color 0.15s;
 }
-.date-range input[type="date"]:focus {
-  outline: none;
-  border-color: var(--accent);
+.history-toggle:hover {
+  color: var(--text);
 }
-.date-sep {
-  color: var(--text-dim);
-  font-size: 0.82rem;
+.history-toggle-icon {
+  transition: transform 0.15s;
+  transform: rotate(180deg); /* expanded = pointing up */
 }
-.history-expand {
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  transition: color 0.15s, transform 0.15s;
-}
-.history-item {
-  display: flex;
-  flex-direction: column;
-}
-.history-row:hover .history-expand {
-  color: var(--accent);
-}
-.history-item.open .history-expand {
-  color: var(--accent);
-  transform: rotate(180deg);
-}
-.history-item.open .history-row {
-  border-radius: 12px 12px 0 0;
-}
-.history-detail {
-  background: var(--bg-elev);
-  border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 12px 12px;
-  margin-top: -12px;
-  padding: 1.5rem 1rem 1rem;
+.history-toggle.collapsed .history-toggle-icon {
+  transform: rotate(0deg); /* collapsed = pointing down */
 }
