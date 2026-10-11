@@ -89,6 +89,18 @@
           <h2>History</h2>
           <p class="muted" id="historyCount">0 transactions</p>
         </div>
+        <div class="history-filters">
+          <div class="filter-chips">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="today">Today</button>
+            <button class="chip" data-filter="lastmonth">Last Month</button>
+          </div>
+          <div class="date-range">
+            <input type="date" id="filterFrom" aria-label="From date" />
+            <span class="date-sep">to</span>
+            <input type="date" id="filterTo" aria-label="To date" />
+          </div>
+        </div>
         <div class="card">
           <div id="historyList" class="history-list"></div>
           <div id="emptyHistory" class="empty-state small hidden">

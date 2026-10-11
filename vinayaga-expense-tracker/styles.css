@@ -920,3 +920,71 @@ h1, h2, h3 {
 @keyframes et-spin {
   to { transform: rotate(360deg); }
 }
+
+/* History filters */
+.history-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0.6rem 0 0.7rem;
+}
+.filter-chips {
+  display: flex;
+  gap: 0.4rem;
+}
+.chip {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+}
+.chip.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.date-range input[type="date"] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.32rem 0.5rem;
+  font-size: 0.82rem;
+  font-family: var(--font);
+  color-scheme: dark;
+}
+.date-range input[type="date"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.date-sep {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
+.history-expand {
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s, transform 0.15s;
+}
+.history-row:hover .history-expand {
+  color: var(--accent);
+  transform: translateX(2px);
+}
